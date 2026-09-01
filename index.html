@@ -1,0 +1,2787 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>VIODA PROPERTY HUB</title>
+
+<!-- =====================================================
+     FIREBASE
+===================================================== -->
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
+
+<style>
+
+/* =====================================================
+   GENERAL
+===================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+
+    margin: 0;
+
+    font-family: Arial, sans-serif;
+
+    background: #f5f0ff;
+
+    color: #222;
+
+}
+
+button {
+
+    border: none;
+
+    cursor: pointer;
+
+    font-weight: bold;
+
+    border-radius: 6px;
+
+}
+
+input,
+select,
+textarea {
+
+    width: 100%;
+
+    padding: 12px;
+
+    margin-top: 5px;
+
+    border: 1px solid #ccc;
+
+    border-radius: 6px;
+
+    font-size: 15px;
+
+}
+
+textarea {
+
+    min-height: 120px;
+
+    resize: vertical;
+
+}
+
+
+/* =====================================================
+   HEADER
+===================================================== */
+
+.header {
+
+    background: purple;
+
+    color: white;
+
+    text-align: center;
+
+    padding: 25px 15px;
+
+}
+
+.header h1 {
+
+    margin: 0;
+
+    font-size: 30px;
+
+}
+
+.header p {
+
+    margin: 8px 0 0;
+
+}
+
+
+/* =====================================================
+   NAVIGATION
+===================================================== */
+
+.navbar {
+
+    background: #6a0dad;
+
+    padding: 10px;
+
+    display: flex;
+
+    justify-content: center;
+
+    gap: 10px;
+
+    flex-wrap: wrap;
+
+}
+
+.navbar button {
+
+    background: white;
+
+    color: #6a0dad;
+
+    padding: 10px 15px;
+
+}
+
+.navbar button:hover {
+
+    background: #eee;
+
+}
+
+
+/* =====================================================
+   MAIN CONTAINER
+===================================================== */
+
+.container {
+
+    max-width: 1200px;
+
+    margin: auto;
+
+    padding: 20px;
+
+}
+
+
+/* =====================================================
+   SECTION
+===================================================== */
+
+.section {
+
+    background: white;
+
+    padding: 20px;
+
+    margin-bottom: 20px;
+
+    border-radius: 10px;
+
+    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+
+}
+
+.section h2 {
+
+    color: #6a0dad;
+
+    margin-top: 0;
+
+}
+
+
+/* =====================================================
+   SEARCH
+===================================================== */
+
+.search-grid {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr auto;
+
+    gap: 10px;
+
+}
+
+.search-button {
+
+    background: purple;
+
+    color: white;
+
+    padding: 12px 20px;
+
+}
+
+.show-all-button {
+
+    background: #555;
+
+    color: white;
+
+    padding: 12px 20px;
+
+    margin-top: 10px;
+
+}
+
+
+/* =====================================================
+   PROPERTY GRID
+===================================================== */
+
+.property-grid {
+
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 20px;
+
+}
+
+.property-card {
+
+    background: white;
+
+    border-radius: 10px;
+
+    padding: 15px;
+
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+
+}
+
+.property-card img {
+
+    width: 100%;
+
+    height: 210px;
+
+    object-fit: cover;
+
+    border-radius: 8px;
+
+}
+
+.property-card h3 {
+
+    color: #6a0dad;
+
+}
+
+.property-card p {
+
+    margin: 8px 0;
+
+}
+
+.view-button {
+
+    width: 100%;
+
+    margin-top: 10px;
+
+    padding: 12px;
+
+    background: purple;
+
+    color: white;
+
+}
+
+.view-button:hover {
+
+    background: #6a0dad;
+
+}
+
+
+/* =====================================================
+   FORM
+===================================================== */
+
+.form-grid {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 15px;
+
+}
+
+.form-group {
+
+    margin-bottom: 10px;
+
+}
+
+.full-width {
+
+    grid-column: 1 / -1;
+
+}
+
+.form-group label {
+
+    font-weight: bold;
+
+    display: block;
+
+}
+
+
+/* =====================================================
+   FEATURES
+===================================================== */
+
+.features {
+
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 10px;
+
+}
+
+.feature {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+}
+
+.feature input {
+
+    width: auto;
+
+}
+
+
+/* =====================================================
+   SUBMIT BUTTON
+===================================================== */
+
+.submit-button {
+
+    width: 100%;
+
+    padding: 14px;
+
+    background: purple;
+
+    color: white;
+
+    font-size: 16px;
+
+    margin-top: 15px;
+
+}
+
+.submit-button:hover {
+
+    background: #6a0dad;
+
+}
+
+.submit-button:disabled {
+
+    background: #999;
+
+    cursor: not-allowed;
+
+}
+
+
+/* =====================================================
+   MESSAGES
+===================================================== */
+
+#formMessage {
+
+    margin-top: 15px;
+
+    padding: 12px;
+
+    border-radius: 6px;
+
+    display: none;
+
+    font-weight: bold;
+
+}
+
+
+/* =====================================================
+   MODAL
+===================================================== */
+
+.modal {
+
+    display: none;
+
+    position: fixed;
+
+    z-index: 9999;
+
+    left: 0;
+
+    top: 0;
+
+    width: 100%;
+
+    height: 100%;
+
+    overflow-y: auto;
+
+    background: rgba(0,0,0,0.7);
+
+    padding: 20px;
+
+}
+
+.modal-content {
+
+    background: white;
+
+    max-width: 700px;
+
+    margin: 30px auto;
+
+    padding: 25px;
+
+    border-radius: 10px;
+
+}
+
+.close-button {
+
+    float: right;
+
+    background: #555;
+
+    color: white;
+
+    padding: 10px 15px;
+
+}
+
+.modal-content h2 {
+
+    color: #6a0dad;
+
+}
+
+.photo-gallery {
+
+    display: grid;
+
+    grid-template-columns: repeat(2,1fr);
+
+    gap: 10px;
+
+    margin: 15px 0;
+
+}
+
+.photo-gallery img {
+
+    width: 100%;
+
+    height: 220px;
+
+    object-fit: cover;
+
+    border-radius: 8px;
+
+}
+
+
+/* =====================================================
+   PAYMENT
+===================================================== */
+
+.payment-box {
+
+    background: #f5f0ff;
+
+    border: 2px solid #6a0dad;
+
+    padding: 15px;
+
+    border-radius: 8px;
+
+    margin-top: 15px;
+
+}
+
+.payment-box h3 {
+
+    color: #6a0dad;
+
+}
+
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+.footer {
+
+    background: purple;
+
+    color: white;
+
+    text-align: center;
+
+    padding: 25px 15px;
+
+    margin-top: 30px;
+
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 900px) {
+
+    .property-grid {
+
+        grid-template-columns: repeat(2,1fr);
+
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .search-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .property-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .form-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .full-width {
+
+        grid-column: auto;
+
+    }
+
+    .features {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .photo-gallery {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .header h1 {
+
+        font-size: 24px;
+
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
+
+<div class="header">
+
+<h1>VIODA PROPERTY HUB</h1>
+
+<p>Giving you the Best!</p>
+
+<p>
+🏠 Properties • 🏢 Commercial • 🌍 Land • 🚗 Cars
+</p>
+
+</div>
+
+
+<!-- =====================================================
+     NAVIGATION
+===================================================== -->
+
+<div class="navbar">
+
+<button
+type="button"
+onclick="scrollToProperties()">
+🏠 PROPERTIES
+</button>
+
+<button
+type="button"
+onclick="scrollToSubmission()">
+➕ POST PROPERTY
+</button>
+
+<button
+type="button"
+onclick="openAdminPage()">
+🔐 ADMIN
+</button>
+
+<button
+type="button"
+onclick="testJavaScript()">
+🧪 TEST JAVASCRIPT
+</button>
+
+</div>
+
+
+<div class="container">
+
+
+<!-- =====================================================
+     SEARCH
+===================================================== -->
+
+<div class="section"
+id="propertiesSection">
+
+<h2>🔎 FIND A PROPERTY</h2>
+
+<div class="search-grid">
+
+<div>
+
+<label>Location</label>
+
+<input
+type="text"
+id="locationSearch"
+placeholder="e.g. Homabay, Rongo">
+
+</div>
+
+
+<div>
+
+<label>Property Type</label>
+
+<select id="typeSearch">
+
+<option value="">
+All Property Types
+</option>
+
+<option value="residential">
+Residential House
+</option>
+
+<option value="apartment">
+Apartment
+</option>
+
+<option value="air bnb">
+Air BnB
+</option>
+
+<option value="commercial">
+Commercial
+</option>
+
+<option value="land">
+Land
+</option>
+
+<option value="car">
+Car
+</option>
+
+</select>
+
+</div>
+
+
+<div>
+
+<label>&nbsp;</label>
+
+<button
+type="button"
+class="search-button"
+onclick="searchProperties()">
+
+SEARCH
+
+</button>
+
+</div>
+
+</div>
+
+
+<button
+type="button"
+class="show-all-button"
+onclick="showAllProperties()">
+
+SHOW ALL PROPERTIES
+
+</button>
+
+</div>
+
+
+<!-- =====================================================
+     PROPERTY LIST
+===================================================== -->
+
+<div class="section">
+
+<h2>🏠 AVAILABLE PROPERTIES</h2>
+
+<p>
+
+Total Properties:
+
+<strong id="propertyCount">
+0
+</strong>
+
+</p>
+
+<div
+class="property-grid"
+id="propertyGrid">
+
+<p>
+Loading properties...
+</p>
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     PROPERTY SUBMISSION
+===================================================== -->
+
+<div
+class="section"
+id="submissionSection">
+
+<h2>➕ POST YOUR PROPERTY</h2>
+
+<p>
+List your property on VIODA PROPERTY HUB.
+</p>
+
+
+<form id="propertyForm">
+
+
+<div class="form-grid">
+
+
+<!-- OWNER -->
+
+<div class="form-group">
+
+<label>
+Owner Full Name *
+</label>
+
+<input
+type="text"
+id="ownerName"
+required
+placeholder="Enter full name">
+
+</div>
+
+
+<!-- APARTMENT -->
+
+<div class="form-group">
+
+<label>
+Apartment / Property Name
+</label>
+
+<input
+type="text"
+id="apartmentName"
+placeholder="Property name">
+
+</div>
+
+
+<!-- PHONE -->
+
+<div class="form-group">
+
+<label>
+Phone Number *
+</label>
+
+<input
+type="tel"
+id="ownerPhone"
+required
+placeholder="07XXXXXXXX">
+
+</div>
+
+
+<!-- EMAIL -->
+
+<div class="form-group">
+
+<label>
+Email
+</label>
+
+<input
+type="email"
+id="ownerEmail"
+placeholder="example@email.com">
+
+</div>
+
+
+<!-- PROPERTY TYPE -->
+
+<div class="form-group">
+
+<label>
+Property Type *
+</label>
+
+<select
+id="propertyType"
+required>
+
+<option value="">
+Select property type
+</option>
+
+<option value="residential">
+Residential House
+</option>
+
+<option value="apartment">
+Apartment
+</option>
+
+<option value="air bnb">
+Air BnB
+</option>
+
+<option value="commercial">
+Commercial Property
+</option>
+
+<option value="land">
+Land
+</option>
+
+<option value="car">
+Car
+</option>
+
+</select>
+
+</div>
+
+
+<!-- LISTING TYPE -->
+
+<div class="form-group">
+
+<label>
+Listing Type *
+</label>
+
+<select
+id="listingType"
+required>
+
+<option value="">
+Select listing type
+</option>
+
+<option value="sale">
+For Sale
+</option>
+
+<option value="rent">
+For Rent
+</option>
+
+<option value="lease">
+For Lease
+</option>
+
+<option value="hire">
+For Hire
+</option>
+
+</select>
+
+</div>
+
+
+<!-- LOCATION -->
+
+<div class="form-group">
+
+<label>
+Property Location *
+</label>
+
+<input
+type="text"
+id="propertyLocation"
+required
+placeholder="e.g. Homabay">
+
+</div>
+
+
+<!-- PRICE -->
+
+<div class="form-group">
+
+<label>
+Price (KSh) *
+</label>
+
+<input
+type="number"
+id="propertyPrice"
+required
+min="0"
+placeholder="Enter price">
+
+</div>
+
+
+<!-- DESCRIPTION -->
+
+<div class="form-group full-width">
+
+<label>
+Property Description *
+</label>
+
+<textarea
+id="propertyDescription"
+required
+placeholder="Describe the property..."></textarea>
+
+</div>
+
+
+<!-- FEATURES -->
+
+<div class="form-group full-width">
+
+<label>
+Property Features
+</label>
+
+<div class="features">
+
+
+<label class="feature">
+
+<input
+type="checkbox"
+name="propertyFeatures"
+value="parking">
+
+Parking
+
+</label>
+
+
+<label class="feature">
+
+<input
+type="checkbox"
+name="propertyFeatures"
+value="water">
+
+Reliable Water
+
+</label>
+
+
+<label class="feature">
+
+<input
+type="checkbox"
+name="propertyFeatures"
+value="wifi">
+
+Wi-Fi Internet
+
+</label>
+
+
+<label class="feature">
+
+<input
+type="checkbox"
+name="propertyFeatures"
+value="electricity">
+
+Electricity
+
+</label>
+
+
+<label class="feature">
+
+<input
+type="checkbox"
+name="propertyFeatures"
+value="security">
+
+Security
+
+</label>
+
+
+<label class="feature">
+
+<input
+type="checkbox"
+name="propertyFeatures"
+value="access">
+
+Access Roads
+
+</label>
+
+</div>
+
+</div>
+
+
+<!-- PHOTOS -->
+
+<div class="form-group full-width">
+
+<label>
+Property Photos
+</label>
+
+<input
+type="file"
+id="propertyPhotos"
+accept="image/*"
+multiple>
+
+<small>
+You can select multiple photos.
+</small>
+
+</div>
+
+
+</div>
+
+
+<!-- PAYMENT INFORMATION -->
+
+<div class="payment-box">
+
+<h3>
+💳 Listing Fee
+</h3>
+
+<p>
+
+Property listing fee:
+
+<strong>
+KSh 100
+</strong>
+
+</p>
+
+<p>
+After payment is confirmed, your property
+will be posted automatically.
+</p>
+
+</div>
+
+
+<button
+type="submit"
+class="submit-button"
+id="submitPropertyButton">
+
+📤 SUBMIT PROPERTY
+
+</button>
+
+
+<div
+id="formMessage">
+</div>
+
+
+</form>
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     VIEW PROPERTY MODAL
+===================================================== -->
+
+<div
+class="modal"
+id="propertyModal">
+
+<div class="modal-content">
+
+<button
+type="button"
+class="close-button"
+onclick="closePropertyModal()">
+
+CLOSE
+
+</button>
+
+
+<h2 id="modalTitle">
+Property
+</h2>
+
+
+<div id="modalPhotos">
+</div>
+
+
+<p id="modalLocation">
+</p>
+
+<p id="modalPrice">
+</p>
+
+<p id="modalListing">
+</p>
+
+<p id="modalType">
+</p>
+
+<p id="modalOwner">
+</p>
+
+<p id="modalPhone">
+</p>
+
+<p id="modalEmail">
+</p>
+
+<p id="modalDescription">
+</p>
+
+<p id="modalFeatures">
+</p>
+
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
+<div class="footer">
+
+<h3>
+VIODA PROPERTY HUB
+</h3>
+
+<p>
+Giving you the Best!
+</p>
+
+<p>
+📞 +254724144068 / +254106585566
+</p>
+
+<p>
+📧 viodapropertyhub@gmail.com
+</p>
+
+</div>
+
+
+<!-- =====================================================
+     FIREBASE + PAGE JAVASCRIPT
+===================================================== -->
+
+<script>
+
+/* =====================================================
+   FIREBASE CONFIGURATION
+===================================================== */
+
+const firebaseConfig = {
+
+    apiKey:
+    "AIzaSyBgHYsPHBpSaFy057GglWzZcWUnpUpu_wM",
+
+    authDomain:
+    "vioda-properties-hub.firebaseapp.com",
+
+    databaseURL:
+    "https://vioda-properties-hub-default-rtdb.firebaseio.com",
+
+    projectId:
+    "vioda-properties-hub",
+
+    storageBucket:
+    "vioda-properties-hub.firebasestorage.app",
+
+    messagingSenderId:
+    "422965817049",
+
+    appId:
+    "1:422965817049:web:18e572a712ed247851d8c8"
+
+};
+
+
+/* =====================================================
+   FIREBASE INITIALIZATION
+===================================================== */
+
+try {
+
+    if (!firebase.apps.length) {
+
+        firebase.initializeApp(
+            firebaseConfig
+        );
+
+    }
+
+    console.log(
+        "✅ Firebase initialized successfully."
+    );
+
+}
+
+catch(error) {
+
+    console.error(
+        "❌ Firebase initialization error:",
+        error
+    );
+
+}
+
+
+const db =
+firebase.firestore();
+
+const storage =
+firebase.storage();
+
+const auth =
+firebase.auth();
+
+
+/* =====================================================
+   GLOBAL VARIABLES
+===================================================== */
+
+let allProperties = [];
+
+let propertyListener = null;
+
+
+/* =====================================================
+   TEST JAVASCRIPT
+===================================================== */
+
+function testJavaScript() {
+
+    alert(
+        "✅ JAVASCRIPT IS WORKING!\n\n" +
+        "VIODA PROPERTY HUB is working correctly."
+    );
+
+}
+
+window.testJavaScript =
+testJavaScript;
+
+
+/* =====================================================
+   OPEN ADMIN
+===================================================== */
+
+function openAdminPage() {
+
+    window.location.href =
+    "admin.html";
+
+}
+
+window.openAdminPage =
+openAdminPage;
+
+
+/* =====================================================
+   SCROLL TO PROPERTIES
+===================================================== */
+
+function scrollToProperties() {
+
+    const section =
+    document.getElementById(
+        "propertiesSection"
+    );
+
+    if (section) {
+
+        section.scrollIntoView({
+            behavior: "smooth"
+        });
+
+    }
+
+}
+
+window.scrollToProperties =
+scrollToProperties;
+
+
+/* =====================================================
+   SCROLL TO SUBMISSION
+===================================================== */
+
+function scrollToSubmission() {
+
+    const section =
+    document.getElementById(
+        "submissionSection"
+    );
+
+    if (section) {
+
+        section.scrollIntoView({
+            behavior: "smooth"
+        });
+
+    }
+
+}
+
+window.scrollToSubmission =
+scrollToSubmission;
+
+
+/* =====================================================
+   LOAD PROPERTIES
+===================================================== */
+
+function loadProperties() {
+
+    const grid =
+    document.getElementById(
+        "propertyGrid"
+    );
+
+    const count =
+    document.getElementById(
+        "propertyCount"
+    );
+
+
+    if (!grid) {
+
+        return;
+
+    }
+
+
+    grid.innerHTML =
+    "<p>Loading properties...</p>";
+
+
+    if (propertyListener) {
+
+        propertyListener();
+
+        propertyListener =
+        null;
+
+    }
+
+
+    propertyListener =
+    db
+    .collection("properties")
+    .orderBy(
+        "createdAt",
+        "desc"
+    )
+    .onSnapshot(
+
+        function(snapshot) {
+
+            allProperties = [];
+
+
+            snapshot.forEach(
+                function(doc) {
+
+                    allProperties.push({
+
+                        id:
+                        doc.id,
+
+                        ...doc.data()
+
+                    });
+
+                }
+            );
+
+
+            if (count) {
+
+                count.innerText =
+                allProperties.length;
+
+            }
+
+
+            displayProperties(
+                allProperties
+            );
+
+        },
+
+        function(error) {
+
+            console.error(
+                "PROPERTY LOAD ERROR:",
+                error
+            );
+
+
+            /* If createdAt index/order causes
+               an issue, load without ordering. */
+
+            db.collection(
+                "properties"
+            )
+            .get()
+            .then(
+                function(snapshot) {
+
+                    allProperties = [];
+
+
+                    snapshot.forEach(
+                        function(doc) {
+
+                            allProperties.push({
+
+                                id: doc.id,
+
+                                ...doc.data()
+
+                            });
+
+                        }
+                    );
+
+
+                    if (count) {
+
+                        count.innerText =
+                        allProperties.length;
+
+                    }
+
+
+                    displayProperties(
+                        allProperties
+                    );
+
+                }
+            )
+            .catch(
+                function(secondError) {
+
+                    console.error(
+                        secondError
+                    );
+
+
+                    grid.innerHTML =
+                    "<p style='color:red;'>" +
+                    "Unable to load properties.<br><br>" +
+                    secondError.message +
+                    "</p>";
+
+                }
+            );
+
+        }
+
+    );
+
+}
+
+
+/* =====================================================
+   DISPLAY PROPERTIES
+===================================================== */
+
+function displayProperties(
+    properties
+) {
+
+    const grid =
+    document.getElementById(
+        "propertyGrid"
+    );
+
+
+    if (!grid) {
+
+        return;
+
+    }
+
+
+    grid.innerHTML =
+    "";
+
+
+    if (
+        !properties ||
+        properties.length === 0
+    ) {
+
+        grid.innerHTML =
+        "<p>No properties available yet.</p>";
+
+        return;
+
+    }
+
+
+    properties.forEach(
+        function(property) {
+
+            const card =
+            document.createElement(
+                "div"
+            );
+
+
+            card.className =
+            "property-card";
+
+
+            const photos =
+            Array.isArray(
+                property.photos
+            )
+            ?
+            property.photos
+            :
+            [];
+
+
+            if (
+                photos.length > 0
+            ) {
+
+                const image =
+                document.createElement(
+                    "img"
+                );
+
+
+                image.src =
+                photos[0];
+
+
+                image.alt =
+                "Property photo";
+
+
+                image.onerror =
+                function() {
+
+                    this.style.display =
+                    "none";
+
+                };
+
+
+                card.appendChild(
+                    image
+                );
+
+            }
+
+
+            const title =
+            document.createElement(
+                "h3"
+            );
+
+
+            title.innerText =
+            property.apartment ||
+            property.name ||
+            "Property";
+
+
+            card.appendChild(
+                title
+            );
+
+
+            const location =
+            document.createElement(
+                "p"
+            );
+
+
+            location.innerText =
+            "📍 " +
+            (
+                property.location ||
+                "Location not provided"
+            );
+
+
+            card.appendChild(
+                location
+            );
+
+
+            const price =
+            document.createElement(
+                "p"
+            );
+
+
+            price.innerText =
+            "💰 KSh " +
+            (
+                property.price ||
+                "0"
+            );
+
+
+            card.appendChild(
+                price
+            );
+
+
+            const listing =
+            document.createElement(
+                "p"
+            );
+
+
+            listing.innerText =
+            "📋 " +
+            formatListingType(
+                property.listingType
+            );
+
+
+            card.appendChild(
+                listing
+            );
+
+
+            const type =
+            document.createElement(
+                "p"
+            );
+
+
+            type.innerText =
+            "🏠 " +
+            formatPropertyType(
+                property.propertyType
+            );
+
+
+            card.appendChild(
+                type
+            );
+
+
+            const viewButton =
+            document.createElement(
+                "button"
+            );
+
+
+            viewButton.type =
+            "button";
+
+
+            viewButton.className =
+            "view-button";
+
+
+            viewButton.innerText =
+            "👁 VIEW PROPERTY";
+
+
+            viewButton.onclick =
+            function() {
+
+                viewProperty(
+                    property
+                );
+
+            };
+
+
+            card.appendChild(
+                viewButton
+            );
+
+
+            grid.appendChild(
+                card
+            );
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   FORMAT PROPERTY TYPE
+===================================================== */
+
+function formatPropertyType(
+    type
+) {
+
+    if (!type) {
+
+        return "Property";
+
+    }
+
+
+    const values = {
+
+        residential:
+        "Residential House",
+
+        apartment:
+        "Apartment",
+
+        "air bnb":
+        "Air BnB",
+
+        commercial:
+        "Commercial Property",
+
+        land:
+        "Land",
+
+        car:
+        "Car"
+
+    };
+
+
+    return values[
+        String(type).toLowerCase()
+    ]
+    ||
+    type;
+
+}
+
+
+/* =====================================================
+   FORMAT LISTING TYPE
+===================================================== */
+
+function formatListingType(
+    type
+) {
+
+    if (!type) {
+
+        return "";
+
+    }
+
+
+    const values = {
+
+        sale:
+        "For Sale",
+
+        rent:
+        "For Rent",
+
+        lease:
+        "For Lease",
+
+        hire:
+        "For Hire"
+
+    };
+
+
+    return values[
+        String(type).toLowerCase()
+    ]
+    ||
+    type;
+
+}
+
+
+/* =====================================================
+   SEARCH
+===================================================== */
+
+function searchProperties() {
+
+    const locationInput =
+    document.getElementById(
+        "locationSearch"
+    );
+
+
+    const typeInput =
+    document.getElementById(
+        "typeSearch"
+    );
+
+
+    const location =
+    locationInput
+    ?
+    locationInput.value
+    .toLowerCase()
+    .trim()
+    :
+    "";
+
+
+    const type =
+    typeInput
+    ?
+    typeInput.value
+    .toLowerCase()
+    .trim()
+    :
+    "";
+
+
+    const filtered =
+    allProperties.filter(
+        function(property) {
+
+            const propertyLocation =
+            String(
+                property.location ||
+                ""
+            )
+            .toLowerCase();
+
+
+            const propertyType =
+            String(
+                property.propertyType ||
+                ""
+            )
+            .toLowerCase();
+
+
+            const locationMatch =
+            !location ||
+            propertyLocation.includes(
+                location
+            );
+
+
+            const typeMatch =
+            !type ||
+            propertyType === type;
+
+
+            return (
+                locationMatch &&
+                typeMatch
+            );
+
+        }
+    );
+
+
+    displayProperties(
+        filtered
+    );
+
+}
+
+window.searchProperties =
+searchProperties;
+
+
+/* =====================================================
+   SHOW ALL
+===================================================== */
+
+function showAllProperties() {
+
+    const locationInput =
+    document.getElementById(
+        "locationSearch"
+    );
+
+
+    const typeInput =
+    document.getElementById(
+        "typeSearch"
+    );
+
+
+    if (locationInput) {
+
+        locationInput.value =
+        "";
+
+    }
+
+
+    if (typeInput) {
+
+        typeInput.value =
+        "";
+
+    }
+
+
+    displayProperties(
+        allProperties
+    );
+
+}
+
+window.showAllProperties =
+showAllProperties;
+
+
+/* =====================================================
+   VIEW PROPERTY
+===================================================== */
+
+function viewProperty(
+    property
+) {
+
+    const modal =
+    document.getElementById(
+        "propertyModal"
+    );
+
+
+    if (!modal) {
+
+        alert(
+            "Property window not found."
+        );
+
+        return;
+
+    }
+
+
+    modal.style.display =
+    "block";
+
+
+    document.getElementById(
+        "modalTitle"
+    ).innerText =
+    property.apartment ||
+    property.name ||
+    "Property";
+
+
+    document.getElementById(
+        "modalLocation"
+    ).innerText =
+    "📍 Location: " +
+    (
+        property.location ||
+        ""
+    );
+
+
+    document.getElementById(
+        "modalPrice"
+    ).innerText =
+    "💰 Price: KSh " +
+    (
+        property.price ||
+        ""
+    );
+
+
+    document.getElementById(
+        "modalListing"
+    ).innerText =
+    "📋 Listing: " +
+    formatListingType(
+        property.listingType
+    );
+
+
+    document.getElementById(
+        "modalType"
+    ).innerText =
+    "🏠 Type: " +
+    formatPropertyType(
+        property.propertyType
+    );
+
+
+    document.getElementById(
+        "modalOwner"
+    ).innerText =
+    "👤 Owner: " +
+    (
+        property.name ||
+        ""
+    );
+
+
+    document.getElementById(
+        "modalPhone"
+    ).innerText =
+    "📞 Phone: " +
+    (
+        property.phone ||
+        ""
+    );
+
+
+    document.getElementById(
+        "modalEmail"
+    ).innerText =
+    "📧 Email: " +
+    (
+        property.email ||
+        ""
+    );
+
+
+    document.getElementById(
+        "modalDescription"
+    ).innerText =
+    "📝 Description: " +
+    (
+        property.description ||
+        ""
+    );
+
+
+    const features =
+    Array.isArray(
+        property.features
+    )
+    ?
+    property.features.join(
+        " • "
+    )
+    :
+    "";
+
+
+    document.getElementById(
+        "modalFeatures"
+    ).innerText =
+    "⭐ Features: " +
+    (
+        features ||
+        "None specified"
+    );
+
+
+    const photosContainer =
+    document.getElementById(
+        "modalPhotos"
+    );
+
+
+    photosContainer.innerHTML =
+    "";
+
+
+    const photos =
+    Array.isArray(
+        property.photos
+    )
+    ?
+    property.photos
+    :
+    [];
+
+
+    if (
+        photos.length === 0
+    ) {
+
+        photosContainer.innerHTML =
+        "<p>No photos available.</p>";
+
+    }
+
+    else {
+
+        const gallery =
+        document.createElement(
+            "div"
+        );
+
+
+        gallery.className =
+        "photo-gallery";
+
+
+        photos.forEach(
+            function(photo) {
+
+                const image =
+                document.createElement(
+                    "img"
+                );
+
+
+                image.src =
+                photo;
+
+
+                image.alt =
+                "Property photo";
+
+
+                gallery.appendChild(
+                    image
+                );
+
+            }
+        );
+
+
+        photosContainer.appendChild(
+            gallery
+        );
+
+    }
+
+}
+
+window.viewProperty =
+viewProperty;
+
+
+/* =====================================================
+   CLOSE PROPERTY
+===================================================== */
+
+function closePropertyModal() {
+
+    const modal =
+    document.getElementById(
+        "propertyModal"
+    );
+
+
+    if (modal) {
+
+        modal.style.display =
+        "none";
+
+    }
+
+}
+
+window.closePropertyModal =
+closePropertyModal;
+
+
+/* =====================================================
+   PROPERTY SUBMISSION
+===================================================== */
+
+document.addEventListener(
+"DOMContentLoaded",
+function() {
+
+    const form =
+    document.getElementById(
+        "propertyForm"
+    );
+
+
+    if (!form) {
+
+        console.error(
+            "Property form not found."
+        );
+
+        return;
+
+    }
+
+
+    form.addEventListener(
+        "submit",
+        async function(event) {
+
+            event.preventDefault();
+
+
+            const submitButton =
+            document.getElementById(
+                "submitPropertyButton"
+            );
+
+
+            const message =
+            document.getElementById(
+                "formMessage"
+            );
+
+
+            try {
+
+                submitButton.disabled =
+                true;
+
+
+                submitButton.innerText =
+                "SUBMITTING...";
+
+
+                message.style.display =
+                "block";
+
+                message.style.background =
+                "#fff3cd";
+
+                message.style.color =
+                "#856404";
+
+                message.innerText =
+                "Preparing your property...";
+
+
+                /* =========================================
+                   COLLECT FORM DATA
+                ========================================= */
+
+                const name =
+                document.getElementById(
+                    "ownerName"
+                ).value.trim();
+
+
+                const apartment =
+                document.getElementById(
+                    "apartmentName"
+                ).value.trim();
+
+
+                const phone =
+                document.getElementById(
+                    "ownerPhone"
+                ).value.trim();
+
+
+                const email =
+                document.getElementById(
+                    "ownerEmail"
+                ).value.trim();
+
+
+                const propertyType =
+                document.getElementById(
+                    "propertyType"
+                ).value;
+
+
+                const listingType =
+                document.getElementById(
+                    "listingType"
+                ).value;
+
+
+                const location =
+                document.getElementById(
+                    "propertyLocation"
+                ).value.trim();
+
+
+                const price =
+                Number(
+                    document.getElementById(
+                        "propertyPrice"
+                    ).value
+                );
+
+
+                const description =
+                document.getElementById(
+                    "propertyDescription"
+                ).value.trim();
+
+
+                const features =
+                Array.from(
+                    document.querySelectorAll(
+                        'input[name="propertyFeatures"]:checked'
+                    )
+                ).map(
+                    function(item) {
+
+                        return item.value;
+
+                    }
+                );
+
+
+                const photoInput =
+                document.getElementById(
+                    "propertyPhotos"
+                );
+
+
+                const files =
+                photoInput
+                ?
+                Array.from(
+                    photoInput.files
+                )
+                :
+                [];
+
+
+                if (!name) {
+
+                    throw new Error(
+                        "Please enter the owner's name."
+                    );
+
+                }
+
+
+                if (!phone) {
+
+                    throw new Error(
+                        "Please enter the owner's phone number."
+                    );
+
+                }
+
+
+                if (!propertyType) {
+
+                    throw new Error(
+                        "Please select a property type."
+                    );
+
+                }
+
+
+                if (!listingType) {
+
+                    throw new Error(
+                        "Please select a listing type."
+                    );
+
+                }
+
+
+                if (!location) {
+
+                    throw new Error(
+                        "Please enter the property location."
+                    );
+
+                }
+
+
+                if (!price || price < 0) {
+
+                    throw new Error(
+                        "Please enter a valid property price."
+                    );
+
+                }
+
+
+                if (!description) {
+
+                    throw new Error(
+                        "Please enter a property description."
+                    );
+
+                }
+
+
+                /* =========================================
+                   UPLOAD PHOTOS
+                ========================================= */
+
+                const photoURLs = [];
+
+
+                for (
+                    let i = 0;
+                    i < files.length;
+                    i++
+                ) {
+
+                    const file =
+                    files[i];
+
+
+                    if (
+                        !file.type.startsWith(
+                            "image/"
+                        )
+                    ) {
+
+                        continue;
+
+                    }
+
+
+                    message.innerText =
+                    "Uploading photo " +
+                    (i + 1) +
+                    " of " +
+                    files.length +
+                    "...";
+
+
+                    const fileName =
+                    Date.now() +
+                    "_" +
+                    i +
+                    "_" +
+                    file.name
+                    .replace(
+                        /[^a-zA-Z0-9._-]/g,
+                        "_"
+                    );
+
+
+                    const storageRef =
+                    storage
+                    .ref()
+                    .child(
+                        "propertyPhotos/" +
+                        fileName
+                    );
+
+
+                    const upload =
+                    await storageRef.put(
+                        file
+                    );
+
+
+                    const downloadURL =
+                    await upload.ref.getDownloadURL();
+
+
+                    photoURLs.push(
+                        downloadURL
+                    );
+
+                }
+
+
+                /* =========================================
+                   SAVE PROPERTY
+                ========================================= */
+
+                message.innerText =
+                "Saving property...";
+
+
+                await db
+                .collection(
+                    "properties"
+                )
+                .add({
+
+                    name:
+                    name,
+
+                    apartment:
+                    apartment,
+
+                    phone:
+                    phone,
+
+                    email:
+                    email,
+
+                    propertyType:
+                    propertyType,
+
+                    listingType:
+                    listingType,
+
+                    location:
+                    location,
+
+                    price:
+                    price,
+
+                    description:
+                    description,
+
+                    features:
+                    features,
+
+                    photos:
+                    photoURLs,
+
+                    paymentStatus:
+                    "pending",
+
+                    listingFee:
+                    100,
+
+                    createdBy:
+                    "public_submission",
+
+                    createdAt:
+                    firebase.firestore
+                    .FieldValue
+                    .serverTimestamp()
+
+                });
+
+
+                /* =========================================
+                   SUCCESS
+                ========================================= */
+
+                message.style.background =
+                "#d4edda";
+
+                message.style.color =
+                "#155724";
+
+                message.innerText =
+                "✅ PROPERTY SUBMITTED SUCCESSFULLY!\n\n" +
+                "Your property has been posted and is now visible.";
+
+                form.reset();
+
+
+                alert(
+                    "✅ Property submitted successfully!"
+                );
+const paymentPhone = prompt(
+    "💳 VIODA PROPERTY HUB PAYMENT\n\n" +
+    "Payment required: KSh 100\n\n" +
+    "Enter the M-Pesa phone number to receive the payment request:\n\n" +
+    "Example: 0712345678"
+);
+
+if (paymentPhone) {
+
+    const cleanedPhone =
+        paymentPhone
+            .replace(/\s+/g, "")
+            .replace(/-/g, "");
+
+    alert(
+        "📱 PAYMENT REQUEST READY\n\n" +
+        "Amount: KSh 100\n" +
+        "Phone: " + cleanedPhone + "\n\n" +
+        "The M-Pesa payment request will be initiated here."
+    );
+}
+
+                setTimeout(
+                    function() {
+
+                        message.style.display =
+                        "none";
+
+                    },
+                    5000
+                );
+
+            }
+
+            catch(error) {
+
+                console.error(
+                    "PROPERTY SUBMISSION ERROR:",
+                    error
+                );
+
+
+                message.style.display =
+                "block";
+
+                message.style.background =
+                "#f8d7da";
+
+                message.style.color =
+                "#721c24";
+
+                message.innerText =
+                "❌ PROPERTY SUBMISSION FAILED.\n\n" +
+                error.message;
+
+            }
+
+            finally {
+
+                submitButton.disabled =
+                false;
+
+                submitButton.innerText =
+                "📤 SUBMIT PROPERTY";
+
+            }
+
+        }
+    );
+
+});
+
+
+/* =====================================================
+   CLOSE MODAL WHEN CLICKING OUTSIDE
+===================================================== */
+
+window.addEventListener(
+"click",
+function(event) {
+
+    const modal =
+    document.getElementById(
+        "propertyModal"
+    );
+
+
+    if (
+        event.target ===
+        modal
+    ) {
+
+        closePropertyModal();
+
+    }
+
+});
+
+
+/* =====================================================
+   INITIALIZE
+===================================================== */
+
+document.addEventListener(
+"DOMContentLoaded",
+function() {
+
+    console.log(
+        "===================================="
+    );
+
+    console.log(
+        "VIODA PROPERTY HUB"
+    );
+
+    console.log(
+        "INDEX JAVASCRIPT LOADED"
+    );
+
+    console.log(
+        "===================================="
+    );
+
+
+    loadProperties();
+
+});
+
+</script>
+
+</body>
+
+</html>
