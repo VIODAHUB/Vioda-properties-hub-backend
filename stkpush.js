@@ -1,6 +1,7 @@
 // ============================================================
 // VIODA PROPERTY HUB
-// MPESA DARaja SANDBOX - STK PUSH
+// M-PESA DARAJA SANDBOX - STK PUSH
+// PROPERTY CONTACT PAYMENT
 // ============================================================
 
 export default async function handler(req, res) {
@@ -15,28 +16,57 @@ export default async function handler(req, res) {
             success: false,
             message: "Method not allowed"
         });
-
     }
 
     try {
 
         // ----------------------------------------------------
-        // GET PHONE NUMBER FROM WEBSITE
+        // GET PAYMENT INFORMATION FROM WEBSITE
         // ----------------------------------------------------
 
         const {
             phone,
-            propertyId
+            propertyId,
+            userId,
+            amount
         } = req.body || {};
+
+        // ----------------------------------------------------
+        // VALIDATE REQUIRED INFORMATION
+        // ----------------------------------------------------
 
         if (!phone) {
 
             return res.status(400).json({
                 success: false,
-                message: "Phone number is required."
+                message: "M-Pesa phone number is required."
             });
-
         }
+
+        if (!propertyId) {
+
+            return res.status(400).json({
+                success: false,
+                message: "Property ID is required."
+            });
+        }
+
+        if (!userId) {
+
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Please login to your VIODA account before making payment."
+            });
+        }
+
+        // ----------------------------------------------------
+        // PAYMENT AMOUNT
+        // ----------------------------------------------------
+        // Default is KSh 100.
+        // We keep this controlled on the server.
+
+        const paymentAmount = 100;
 
         // ----------------------------------------------------
         // FORMAT KENYAN PHONE NUMBER
@@ -50,27 +80,29 @@ export default async function handler(req, res) {
         if (phoneNumber.startsWith("07")) {
 
             phoneNumber =
-                "254" + phoneNumber.substring(1);
+                "254" +
+                phoneNumber.substring(1);
 
         }
 
         else if (phoneNumber.startsWith("01")) {
 
             phoneNumber =
-                "254" + phoneNumber.substring(1);
-
+                "254" +
+                phoneNumber.substring(1);
         }
 
-        // Must now look like 2547XXXXXXXX or 2541XXXXXXXX
+        // ----------------------------------------------------
+        // VALIDATE PHONE NUMBER
+        // ----------------------------------------------------
 
         if (!/^254[17]\d{8}$/.test(phoneNumber)) {
 
             return res.status(400).json({
                 success: false,
                 message:
-                    "Please enter a valid Kenyan Safaricom phone number."
+                    "Please enter a valid Kenyan phone number."
             });
-
         }
 
         // ----------------------------------------------------
@@ -97,7 +129,7 @@ export default async function handler(req, res) {
         ) {
 
             console.error(
-                "M-PESA environment variables are missing."
+                "M-PESA ENVIRONMENT VARIABLES ARE MISSING."
             );
 
             return res.status(500).json({
@@ -105,7 +137,6 @@ export default async function handler(req, res) {
                 message:
                     "M-Pesa configuration is incomplete."
             });
-
         }
 
         // ----------------------------------------------------
@@ -129,7 +160,8 @@ export default async function handler(req, res) {
 
                     headers: {
                         "Authorization":
-                            "Basic " + credentials
+                            "Basic " +
+                            credentials
                     }
                 }
             );
@@ -143,7 +175,7 @@ export default async function handler(req, res) {
         ) {
 
             console.error(
-                "TOKEN ERROR:",
+                "M-PESA TOKEN ERROR:",
                 tokenData
             );
 
@@ -152,7 +184,6 @@ export default async function handler(req, res) {
                 message:
                     "Could not obtain M-Pesa access token."
             });
-
         }
 
         const accessToken =
@@ -189,7 +220,7 @@ export default async function handler(req, res) {
             ).padStart(2, "0");
 
         // ----------------------------------------------------
-        // GENERATE PASSWORD
+        // GENERATE DARAJA PASSWORD
         // ----------------------------------------------------
 
         const password =
@@ -254,7 +285,7 @@ export default async function handler(req, res) {
                                 "CustomerPayBillOnline",
 
                             Amount:
-                                100,
+                                paymentAmount,
 
                             PartyA:
                                 Number(
@@ -273,11 +304,11 @@ export default async function handler(req, res) {
                                 callbackUrl,
 
                             AccountReference:
-                                propertyId ||
-                                "VIODA",
+                                "VIODA-" +
+                                propertyId,
 
                             TransactionDesc:
-                                "VIODA Property Listing"
+                                "VIODA Property Contact Access"
                         })
                 }
             );
@@ -286,12 +317,37 @@ export default async function handler(req, res) {
             await stkResponse.json();
 
         console.log(
-            "STK RESPONSE:",
-            stkData
+            "================================================"
+        );
+
+        console.log(
+            "VIODA STK PUSH RESPONSE"
+        );
+
+        console.log(
+            JSON.stringify(
+                stkData,
+                null,
+                2
+            )
+        );
+
+        console.log(
+            "Client User ID:",
+            userId
+        );
+
+        console.log(
+            "Property ID:",
+            propertyId
+        );
+
+        console.log(
+            "================================================"
         );
 
         // ----------------------------------------------------
-        // CHECK RESPONSE
+        // CHECK STK RESPONSE
         // ----------------------------------------------------
 
         if (
@@ -312,11 +368,10 @@ export default async function handler(req, res) {
                 data:
                     stkData
             });
-
         }
 
         // ----------------------------------------------------
-        // SUCCESSFUL STK REQUEST
+        // RETURN SUCCESS
         // ----------------------------------------------------
 
         return res.status(200).json({
@@ -324,7 +379,7 @@ export default async function handler(req, res) {
             success: true,
 
             message:
-                "M-Pesa payment request sent.",
+                "M-Pesa payment request sent successfully.",
 
             checkoutRequestId:
                 stkData.CheckoutRequestID,
@@ -334,7 +389,16 @@ export default async function handler(req, res) {
 
             customerMessage:
                 stkData.CustomerMessage ||
-                "Please check your phone and enter your M-Pesa PIN."
+                "Please check your phone and enter your M-Pesa PIN.",
+
+            propertyId:
+                propertyId,
+
+            userId:
+                userId,
+
+            amount:
+                paymentAmount
         });
 
     }
@@ -342,7 +406,7 @@ export default async function handler(req, res) {
     catch (error) {
 
         console.error(
-            "STK PUSH ERROR:",
+            "❌ VIODA STK PUSH ERROR:",
             error
         );
 
