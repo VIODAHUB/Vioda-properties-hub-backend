@@ -9,7 +9,211 @@
 content="width=device-width, initial-scale=1.0">
 
 <title>VIODA PROPERTY HUB</title>
+<!-- ============================================================
+     CLIENT ACCOUNT SECTION
+     ============================================================ -->
 
+<div id="clientAccountSection" class="client-account-section">
+
+    <div id="loggedOutButtons">
+
+        <button
+            type="button"
+            onclick="openRegisterModal()">
+            👤 CREATE ACCOUNT
+        </button>
+
+        <button
+            type="button"
+            onclick="openLoginModal()">
+            🔐 LOGIN
+        </button>
+
+    </div>
+
+
+    <div
+        id="loggedInButtons"
+        style="display:none;">
+
+        <span id="welcomeClient">
+            Welcome!
+        </span>
+
+        <button
+            type="button"
+            onclick="openClientDashboard()">
+            📊 MY ACCOUNT
+        </button>
+
+        <button
+            type="button"
+            onclick="clientLogout()">
+            🚪 LOGOUT
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     REGISTER MODAL
+     ============================================================ -->
+
+<div
+    id="registerModal"
+    class="account-modal"
+    style="display:none;">
+
+    <div class="account-modal-content">
+
+        <button
+            type="button"
+            class="close-modal"
+            onclick="closeRegisterModal()">
+            ×
+        </button>
+
+        <h2>CREATE VIODA ACCOUNT</h2>
+
+        <form id="registerForm">
+
+            <input
+                type="text"
+                id="registerName"
+                placeholder="Full Name"
+                required>
+
+            <input
+                type="tel"
+                id="registerPhone"
+                placeholder="Phone Number"
+                required>
+
+            <input
+                type="email"
+                id="registerEmail"
+                placeholder="Email Address"
+                required>
+
+            <input
+                type="password"
+                id="registerPassword"
+                placeholder="Password"
+                minlength="6"
+                required>
+
+            <input
+                type="password"
+                id="registerConfirmPassword"
+                placeholder="Confirm Password"
+                minlength="6"
+                required>
+
+            <button
+                type="submit"
+                id="registerButton">
+                CREATE ACCOUNT
+            </button>
+
+            <p id="registerMessage"></p>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     LOGIN MODAL
+     ============================================================ -->
+
+<div
+    id="clientLoginModal"
+    class="account-modal"
+    style="display:none;">
+
+    <div class="account-modal-content">
+
+        <button
+            type="button"
+            class="close-modal"
+            onclick="closeLoginModal()">
+            ×
+        </button>
+
+        <h2>CLIENT LOGIN</h2>
+
+        <form id="clientLoginForm">
+
+            <input
+                type="email"
+                id="clientLoginEmail"
+                placeholder="Email Address"
+                required>
+
+            <input
+                type="password"
+                id="clientLoginPassword"
+                placeholder="Password"
+                required>
+
+            <button
+                type="submit"
+                id="clientLoginButton">
+                LOGIN
+            </button>
+
+            <p id="clientLoginMessage"></p>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     CLIENT DASHBOARD
+     ============================================================ -->
+
+<div
+    id="clientDashboardModal"
+    class="account-modal"
+    style="display:none;">
+
+    <div class="account-modal-content">
+
+        <button
+            type="button"
+            class="close-modal"
+            onclick="closeClientDashboard()">
+            ×
+        </button>
+
+        <h2>MY VIODA ACCOUNT</h2>
+
+        <p id="clientNameDisplay"></p>
+        <p id="clientEmailDisplay"></p>
+        <p id="clientPhoneDisplay"></p>
+
+        <hr>
+
+        <h3>👁️ MY VIEWED PROPERTIES</h3>
+
+        <div id="viewedPropertiesList">
+
+            <p>
+                You have not viewed any paid properties yet.
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
 <!-- =====================================================
      FIREBASE
 ===================================================== -->
@@ -611,6 +815,94 @@ textarea {
 
 }
 
+  /* ============================================================
+   CLIENT ACCOUNT STYLES
+   ============================================================ */
+
+.client-account-section {
+    text-align: center;
+    margin: 15px 0;
+}
+
+.client-account-section button {
+    margin: 5px;
+}
+
+#loggedInButtons {
+    text-align: center;
+}
+
+#welcomeClient {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.account-modal {
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background: rgba(0, 0, 0, 0.65);
+}
+
+.account-modal-content {
+    background: white;
+    width: 90%;
+    max-width: 450px;
+    margin: 8% auto;
+    padding: 25px;
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+
+.account-modal-content h2 {
+    text-align: center;
+    color: purple;
+}
+
+.account-modal-content input {
+    width: 100%;
+    padding: 12px;
+    margin: 7px 0;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.account-modal-content button {
+    padding: 11px 16px;
+    border: none;
+    border-radius: 6px;
+    background: purple;
+    color: white;
+    cursor: pointer;
+}
+
+.account-modal-content form button {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.close-modal {
+    float: right;
+    background: #777 !important;
+    font-size: 20px;
+    padding: 4px 10px !important;
+}
+
+#registerMessage,
+#clientLoginMessage {
+    text-align: center;
+    font-weight: bold;
+    margin-top: 12px;
+}
+
+#viewedPropertiesList {
+    margin-top: 15px;
+}
 </style>
 
 </head>
