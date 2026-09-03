@@ -1,12 +1,13 @@
 // ============================================================
 // VIODA PROPERTY HUB
-// M-PESA CALLBACK
+// M-PESA DARAJA CALLBACK
+// PROPERTY CONTACT PAYMENT
 // ============================================================
 
 const admin = require("firebase-admin");
 
 // ============================================================
-// FIREBASE ADMIN INITIALIZATION
+// INITIALIZE FIREBASE ADMIN
 // ============================================================
 
 if (!admin.apps.length) {
@@ -17,7 +18,6 @@ if (!admin.apps.length) {
         );
 
     admin.initializeApp({
-
         credential:
             admin.credential.cert(
                 serviceAccount
@@ -36,17 +36,14 @@ const db =
 module.exports = async function handler(req, res) {
 
     // --------------------------------------------------------
-    // ONLY ACCEPT POST
+    // ONLY ACCEPT POST REQUEST
     // --------------------------------------------------------
 
     if (req.method !== "POST") {
 
         return res.status(405).json({
-
             success: false,
-
-            message:
-                "Method not allowed"
+            message: "Method not allowed"
         });
     }
 
@@ -92,17 +89,14 @@ module.exports = async function handler(req, res) {
             );
 
             return res.status(200).json({
-
                 success: true,
-
-                message:
-                    "Callback received."
+                message: "Callback received."
             });
         }
 
 
         // ----------------------------------------------------
-        // CALLBACK VALUES
+        // CALLBACK INFORMATION
         // ----------------------------------------------------
 
         const resultCode =
@@ -142,42 +136,29 @@ module.exports = async function handler(req, res) {
 
 
         // ====================================================
-        // FIND PROPERTY
+        // PAYMENT FAILED / CANCELLED
         // ====================================================
 
-        let propertyId = null;
+        if (resultCode !== 0) {
 
-        if (checkoutRequestId) {
+            console.log(
+                "❌ M-PESA PAYMENT NOT SUCCESSFUL"
+            );
 
-            const snapshot =
-                await db
-                    .collection("properties")
-                    .where(
-                        "checkoutRequestId",
-                        "==",
-                        checkoutRequestId
-                    )
-                    .limit(1)
-                    .get();
+            console.log(
+                "Reason:",
+                resultDescription
+            );
 
 
-            if (!snapshot.empty) {
+            // We do NOT expose payment information
+            // on the public website.
 
-                propertyId =
-                    snapshot.docs[0].id;
-
-                console.log(
-                    "PROPERTY FOUND:",
-                    propertyId
-                );
-
-            } else {
-
-                console.log(
-                    "NO PROPERTY FOUND FOR CHECKOUT:",
-                    checkoutRequestId
-                );
-            }
+            return res.status(200).json({
+                success: true,
+                message:
+                    "Payment callback received."
+            });
         }
 
 
@@ -185,322 +166,429 @@ module.exports = async function handler(req, res) {
         // PAYMENT SUCCESSFUL
         // ====================================================
 
-        if (resultCode === 0) {
-
-            console.log(
-                "✅ M-PESA PAYMENT SUCCESSFUL"
-            );
+        console.log(
+            "✅ M-PESA PAYMENT SUCCESSFUL"
+        );
 
 
-            // ------------------------------------------------
-            // EXTRACT CALLBACK METADATA
-            // ------------------------------------------------
+        // ----------------------------------------------------
+        // EXTRACT CALLBACK METADATA
+        // ----------------------------------------------------
 
-            const metadata =
-                stkCallback.CallbackMetadata;
-
-
-            let amount = 0;
-
-            let mpesaReceiptNumber =
-                "";
-
-            let transactionDate =
-                "";
-
-            let phoneNumber =
-                "";
+        const metadata =
+            stkCallback.CallbackMetadata;
 
 
-            if (
-                metadata &&
-                Array.isArray(
-                    metadata.Item
-                )
-            ) {
+        let amount = 0;
 
-                metadata.Item.forEach(
-                    function(item) {
+        let mpesaReceiptNumber = "";
 
-                        if (
-                            item.Name ===
-                            "Amount"
-                        ) {
+        let transactionDate = "";
 
-                            amount =
-                                item.Value;
-                        }
+        let phoneNumber = "";
 
 
-                        if (
-                            item.Name ===
-                            "MpesaReceiptNumber"
-                        ) {
+        if (
+            metadata &&
+            Array.isArray(
+                metadata.Item
+            )
+        ) {
 
-                            mpesaReceiptNumber =
-                                item.Value;
-                        }
+            metadata.Item.forEach(
+                function(item) {
 
+                    if (
+                        item.Name ===
+                        "Amount"
+                    ) {
 
-                        if (
-                            item.Name ===
-                            "TransactionDate"
-                        ) {
-
-                            transactionDate =
-                                item.Value;
-                        }
-
-
-                        if (
-                            item.Name ===
-                            "PhoneNumber"
-                        ) {
-
-                            phoneNumber =
-                                item.Value;
-                        }
-
+                        amount =
+                            Number(
+                                item.Value
+                            );
                     }
-                );
-            }
 
 
-            console.log(
-                "Amount:",
-                amount
-            );
+                    if (
+                        item.Name ===
+                        "MpesaReceiptNumber"
+                    ) {
 
-            console.log(
-                "M-Pesa Receipt:",
-                mpesaReceiptNumber
-            );
-
-            console.log(
-                "Phone:",
-                phoneNumber
-            );
-
-
-            // =================================================
-            // CHECK PAYMENT AMOUNT
-            // =================================================
-
-            if (
-                Number(amount) !== 100
-            ) {
-
-                console.error(
-                    "❌ INVALID PAYMENT AMOUNT:",
-                    amount
-                );
-
-
-                if (propertyId) {
-
-                    await db
-                        .collection(
-                            "properties"
-                        )
-                        .doc(
-                            propertyId
-                        )
-                        .update({
-
-                            paymentStatus:
-                                "FAILED",
-
-                            status:
-                                "payment_failed",
-
-                            paymentResultCode:
-                                resultCode,
-
-                            paymentResultDescription:
-                                "Invalid payment amount.",
-
-                            updatedAt:
-                                admin.firestore
-                                    .FieldValue
-                                    .serverTimestamp()
-                        });
-                }
-
-            }
-
-            // =================================================
-            // VALID KSH 100 PAYMENT
-            // =================================================
-
-            else if (propertyId) {
-
-                await db
-                    .collection(
-                        "properties"
-                    )
-                    .doc(
-                        propertyId
-                    )
-                    .update({
-
-                        // ------------------------------
-                        // PAYMENT
-                        // ------------------------------
-
-                        paymentStatus:
-                            "PAID",
-
-                        paymentAmount:
-                            100,
-
-                        paymentCurrency:
-                            "KES",
-
-                        // ------------------------------
-                        // PUBLISH PROPERTY
-                        // ------------------------------
-
-                        status:
-                            "published",
-
-                        // ------------------------------
-                        // M-PESA INFORMATION
-                        // ------------------------------
-
-                        mpesaReceiptNumber:
-                            mpesaReceiptNumber,
-
-                        mpesaTransactionDate:
-                            transactionDate,
-
-                        mpesaPhone:
+                        mpesaReceiptNumber =
                             String(
-                                phoneNumber
-                            ),
-
-                        merchantRequestId:
-                            merchantRequestId,
-
-                        checkoutRequestId:
-                            checkoutRequestId,
-
-                        paymentResultCode:
-                            resultCode,
-
-                        paymentResultDescription:
-                            resultDescription,
-
-                        // ------------------------------
-                        // PAYMENT DATE
-                        // ------------------------------
-
-                        paidAt:
-                            admin.firestore
-                                .FieldValue
-                                .serverTimestamp(),
-
-                        updatedAt:
-                            admin.firestore
-                                .FieldValue
-                                .serverTimestamp()
-                    });
+                                item.Value
+                            );
+                    }
 
 
-                console.log(
-                    "================================================"
-                );
+                    if (
+                        item.Name ===
+                        "TransactionDate"
+                    ) {
 
-                console.log(
-                    "✅ PAYMENT CONFIRMED"
-                );
+                        transactionDate =
+                            String(
+                                item.Value
+                            );
+                    }
 
-                console.log(
-                    "✅ PROPERTY PUBLISHED"
-                );
 
-                console.log(
-                    "PROPERTY ID:",
-                    propertyId
-                );
+                    if (
+                        item.Name ===
+                        "PhoneNumber"
+                    ) {
 
-                console.log(
-                    "================================================"
-                );
+                        phoneNumber =
+                            String(
+                                item.Value
+                            );
+                    }
 
-            }
+                }
+            );
+        }
 
-            else {
 
-                console.log(
-                    "⚠️ Payment successful but property was not found."
-                );
-            }
+        console.log(
+            "Amount:",
+            amount
+        );
+
+        console.log(
+            "M-Pesa Receipt:",
+            mpesaReceiptNumber
+        );
+
+        console.log(
+            "Phone:",
+            phoneNumber
+        );
+
+
+        // ====================================================
+        // VERIFY PAYMENT AMOUNT
+        // ====================================================
+
+        if (amount !== 100) {
+
+            console.log(
+                "⚠️ PAYMENT AMOUNT IS NOT KSh 100."
+            );
+
+            return res.status(200).json({
+                success: true,
+                message:
+                    "Payment received but amount is not valid."
+            });
         }
 
 
         // ====================================================
-        // PAYMENT FAILED / CANCELLED
+        // FIND THE PAYMENT TRANSACTION
+        // ====================================================
+        //
+        // We use the CheckoutRequestID to find the
+        // temporary payment record created by STK Push.
+        //
+        // The STK Push endpoint must create this record.
+        //
         // ====================================================
 
-        else {
+        const paymentSnapshot =
+            await db
+                .collection("propertyPayments")
+                .where(
+                    "checkoutRequestId",
+                    "==",
+                    checkoutRequestId
+                )
+                .limit(1)
+                .get();
+
+
+        if (paymentSnapshot.empty) {
 
             console.log(
-                "❌ M-PESA PAYMENT FAILED OR CANCELLED"
+                "⚠️ NO PAYMENT RECORD FOUND FOR:",
+                checkoutRequestId
             );
 
-            console.log(
-                "Result Code:",
-                resultCode
-            );
-
-            console.log(
-                "Result Description:",
-                resultDescription
-            );
-
-
-            if (propertyId) {
-
-                await db
-                    .collection(
-                        "properties"
-                    )
-                    .doc(
-                        propertyId
-                    )
-                    .update({
-
-                        paymentStatus:
-                            "FAILED",
-
-                        status:
-                            "payment_failed",
-
-                        paymentResultCode:
-                            resultCode,
-
-                        paymentResultDescription:
-                            resultDescription,
-
-                        merchantRequestId:
-                            merchantRequestId,
-
-                        checkoutRequestId:
-                            checkoutRequestId,
-
-                        updatedAt:
-                            admin.firestore
-                                .FieldValue
-                                .serverTimestamp()
-                    });
-
-
-                console.log(
-                    "PROPERTY PAYMENT MARKED FAILED:",
-                    propertyId
-                );
-            }
+            return res.status(200).json({
+                success: true,
+                message:
+                    "Payment callback received."
+            });
         }
+
+
+        const paymentDoc =
+            paymentSnapshot.docs[0];
+
+        const paymentData =
+            paymentDoc.data();
+
+
+        const userId =
+            paymentData.userId || "";
+
+        const propertyId =
+            paymentData.propertyId || "";
+
+
+        console.log(
+            "Client User ID:",
+            userId
+        );
+
+        console.log(
+            "Property ID:",
+            propertyId
+        );
+
+
+        // ====================================================
+        // VALIDATE CLIENT AND PROPERTY
+        // ====================================================
+
+        if (!userId || !propertyId) {
+
+            console.log(
+                "⚠️ Payment record is missing userId or propertyId."
+            );
+
+            return res.status(200).json({
+                success: true,
+                message:
+                    "Payment callback received."
+            });
+        }
+
+
+        // ====================================================
+        // PREVENT DUPLICATE PAYMENT PROCESSING
+        // ====================================================
+
+        if (
+            paymentData.status ===
+            "PAID"
+        ) {
+
+            console.log(
+                "ℹ️ PAYMENT ALREADY PROCESSED."
+            );
+
+            return res.status(200).json({
+                success: true,
+                message:
+                    "Payment already processed."
+            });
+        }
+
+
+        // ====================================================
+        // VERIFY PROPERTY EXISTS
+        // ====================================================
+
+        const propertyRef =
+            db
+                .collection("properties")
+                .doc(propertyId);
+
+        const propertySnapshot =
+            await propertyRef.get();
+
+
+        if (!propertySnapshot.exists) {
+
+            console.log(
+                "⚠️ PROPERTY NOT FOUND:",
+                propertyId
+            );
+
+            return res.status(200).json({
+                success: true,
+                message:
+                    "Property not found."
+            });
+        }
+
+
+        // ====================================================
+        // CALCULATE 7-DAY ACCESS
+        // ====================================================
+
+        const now =
+            new Date();
+
+        const expiresAt =
+            new Date(
+                now.getTime() +
+                (
+                    7 *
+                    24 *
+                    60 *
+                    60 *
+                    1000
+                )
+            );
+
+
+        // ====================================================
+        // SAVE VIEWER ACCESS
+        // ====================================================
+
+        const viewedPropertyRef =
+            db
+                .collection("users")
+                .doc(userId)
+                .collection("viewedProperties")
+                .doc(propertyId);
+
+
+        await viewedPropertyRef.set({
+
+            propertyId:
+                propertyId,
+
+            paid:
+                true,
+
+            paymentAmount:
+                100,
+
+            paymentCurrency:
+                "KES",
+
+            paymentStatus:
+                "PAID",
+
+            paidAt:
+                admin.firestore
+                    .FieldValue
+                    .serverTimestamp(),
+
+            expiresAt:
+                admin.firestore
+                    .Timestamp
+                    .fromDate(
+                        expiresAt
+                    ),
+
+            mpesaReceiptNumber:
+                mpesaReceiptNumber,
+
+            mpesaPhone:
+                phoneNumber,
+
+            mpesaTransactionDate:
+                transactionDate,
+
+            checkoutRequestId:
+                checkoutRequestId,
+
+            merchantRequestId:
+                merchantRequestId,
+
+            updatedAt:
+                admin.firestore
+                    .FieldValue
+                    .serverTimestamp()
+
+        }, {
+            merge: true
+        });
+
+
+        console.log(
+            "✅ 7-DAY PROPERTY ACCESS GRANTED"
+        );
+
+        console.log(
+            "User:",
+            userId
+        );
+
+        console.log(
+            "Property:",
+            propertyId
+        );
+
+
+        // ====================================================
+        // UPDATE PAYMENT RECORD
+        // ====================================================
+
+        await paymentDoc.ref.update({
+
+            status:
+                "PAID",
+
+            amount:
+                100,
+
+            paymentCurrency:
+                "KES",
+
+            mpesaReceiptNumber:
+                mpesaReceiptNumber,
+
+            mpesaPhone:
+                phoneNumber,
+
+            mpesaTransactionDate:
+                transactionDate,
+
+            resultCode:
+                resultCode,
+
+            resultDescription:
+                resultDescription,
+
+            paidAt:
+                admin.firestore
+                    .FieldValue
+                    .serverTimestamp(),
+
+            updatedAt:
+                admin.firestore
+                    .FieldValue
+                    .serverTimestamp()
+
+        });
+
+
+        // ====================================================
+        // DO NOT UPDATE PUBLIC PROPERTY PAYMENT STATUS
+        // ====================================================
+        //
+        // This payment belongs to the VIEWER.
+        //
+        // We intentionally do NOT change:
+        //
+        // properties.paymentStatus
+        //
+        // because ordinary visitors should not see
+        // payment information on the public website.
+        //
+        // ====================================================
+
+
+        console.log(
+            "================================================"
+        );
+
+        console.log(
+            "✅ VIODA PAYMENT PROCESSING COMPLETE"
+        );
+
+        console.log(
+            "7-DAY ACCESS GRANTED"
+        );
+
+        console.log(
+            "================================================"
+        );
 
 
         // ====================================================
@@ -512,23 +600,22 @@ module.exports = async function handler(req, res) {
             success: true,
 
             message:
-                "Callback received successfully."
+                "Payment processed successfully."
+
         });
 
     }
 
 
-    catch(error) {
+    catch (error) {
 
         console.error(
-            "❌ CALLBACK PROCESSING ERROR:",
+            "❌ VIODA CALLBACK ERROR:",
             error
         );
 
 
-        // ----------------------------------------------------
-        // RETURN 200 TO SAFARICOM
-        // ----------------------------------------------------
+        // Always acknowledge the callback.
 
         return res.status(200).json({
 
@@ -536,6 +623,7 @@ module.exports = async function handler(req, res) {
 
             message:
                 "Callback received but processing failed."
+
         });
     }
 };
