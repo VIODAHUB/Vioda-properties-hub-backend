@@ -4,10 +4,39 @@
 // PROPERTY CONTACT PAYMENT
 // ============================================================
 
-export default async function handler(req, res) {
+const admin = require("firebase-admin");
+
+// ============================================================
+// FIREBASE ADMIN INITIALIZATION
+// ============================================================
+
+if (!admin.apps.length) {
+
+    const serviceAccount =
+        JSON.parse(
+            process.env.FIREBASE_SERVICE_ACCOUNT
+        );
+
+    admin.initializeApp({
+        credential:
+            admin.credential.cert(
+                serviceAccount
+            )
+    });
+}
+
+const db =
+    admin.firestore();
+
+
+// ============================================================
+// STK PUSH HANDLER
+// ============================================================
+
+module.exports = async function handler(req, res) {
 
     // --------------------------------------------------------
-    // ONLY ACCEPT POST REQUESTS
+    // ONLY ACCEPT POST
     // --------------------------------------------------------
 
     if (req.method !== "POST") {
@@ -18,55 +47,61 @@ export default async function handler(req, res) {
         });
     }
 
+
     try {
 
         // ----------------------------------------------------
-        // GET PAYMENT INFORMATION FROM WEBSITE
+        // GET DATA FROM WEBSITE
         // ----------------------------------------------------
 
         const {
             phone,
             propertyId,
-            userId,
-            amount
+            userId
         } = req.body || {};
 
+
         // ----------------------------------------------------
-        // VALIDATE REQUIRED INFORMATION
+        // VALIDATE USER
         // ----------------------------------------------------
-
-        if (!phone) {
-
-            return res.status(400).json({
-                success: false,
-                message: "M-Pesa phone number is required."
-            });
-        }
-
-        if (!propertyId) {
-
-            return res.status(400).json({
-                success: false,
-                message: "Property ID is required."
-            });
-        }
 
         if (!userId) {
 
             return res.status(401).json({
                 success: false,
                 message:
-                    "Please login to your VIODA account before making payment."
+                    "Please login before making payment."
             });
         }
 
-        // ----------------------------------------------------
-        // PAYMENT AMOUNT
-        // ----------------------------------------------------
-        // Default is KSh 100.
-        // We keep this controlled on the server.
 
-        const paymentAmount = 100;
+        // ----------------------------------------------------
+        // VALIDATE PROPERTY
+        // ----------------------------------------------------
+
+        if (!propertyId) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Property ID is required."
+            });
+        }
+
+
+        // ----------------------------------------------------
+        // VALIDATE PHONE
+        // ----------------------------------------------------
+
+        if (!phone) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "M-Pesa phone number is required."
+            });
+        }
+
 
         // ----------------------------------------------------
         // FORMAT KENYAN PHONE NUMBER
@@ -76,6 +111,7 @@ export default async function handler(req, res) {
             String(phone)
                 .replace(/\s+/g, "")
                 .replace(/^\+/, "");
+
 
         if (phoneNumber.startsWith("07")) {
 
@@ -92,8 +128,9 @@ export default async function handler(req, res) {
                 phoneNumber.substring(1);
         }
 
+
         // ----------------------------------------------------
-        // VALIDATE PHONE NUMBER
+        // VALIDATE PHONE FORMAT
         // ----------------------------------------------------
 
         if (!/^254[17]\d{8}$/.test(phoneNumber)) {
@@ -105,9 +142,17 @@ export default async function handler(req, res) {
             });
         }
 
-        // ----------------------------------------------------
-        // ENVIRONMENT VARIABLES
-        // ----------------------------------------------------
+
+        // ====================================================
+        // PAYMENT AMOUNT
+        // ====================================================
+
+        const paymentAmount = 100;
+
+
+        // ====================================================
+        // FIREBASE / M-PESA ENVIRONMENT VARIABLES
+        // ====================================================
 
         const consumerKey =
             process.env.MPESA_CONSUMER_KEY;
@@ -120,6 +165,7 @@ export default async function handler(req, res) {
 
         const shortcode =
             process.env.MPESA_SHORTCODE;
+
 
         if (
             !consumerKey ||
@@ -139,9 +185,10 @@ export default async function handler(req, res) {
             });
         }
 
-        // ----------------------------------------------------
-        // GET ACCESS TOKEN
-        // ----------------------------------------------------
+
+        // ====================================================
+        // GET DARAJA ACCESS TOKEN
+        // ====================================================
 
         const credentials =
             Buffer
@@ -152,6 +199,7 @@ export default async function handler(req, res) {
                 )
                 .toString("base64");
 
+
         const tokenResponse =
             await fetch(
                 "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
@@ -159,6 +207,7 @@ export default async function handler(req, res) {
                     method: "GET",
 
                     headers: {
+
                         "Authorization":
                             "Basic " +
                             credentials
@@ -166,8 +215,10 @@ export default async function handler(req, res) {
                 }
             );
 
+
         const tokenData =
             await tokenResponse.json();
+
 
         if (
             !tokenResponse.ok ||
@@ -175,7 +226,7 @@ export default async function handler(req, res) {
         ) {
 
             console.error(
-                "M-PESA TOKEN ERROR:",
+                "DARAJA TOKEN ERROR:",
                 tokenData
             );
 
@@ -186,15 +237,18 @@ export default async function handler(req, res) {
             });
         }
 
+
         const accessToken =
             tokenData.access_token;
 
-        // ----------------------------------------------------
-        // TIMESTAMP
-        // ----------------------------------------------------
+
+        // ====================================================
+        // CREATE TIMESTAMP
+        // ====================================================
 
         const now =
             new Date();
+
 
         const timestamp =
             now.getFullYear().toString() +
@@ -219,9 +273,10 @@ export default async function handler(req, res) {
                 now.getSeconds()
             ).padStart(2, "0");
 
-        // ----------------------------------------------------
+
+        // ====================================================
         // GENERATE DARAJA PASSWORD
-        // ----------------------------------------------------
+        // ====================================================
 
         const password =
             Buffer
@@ -232,16 +287,19 @@ export default async function handler(req, res) {
                 )
                 .toString("base64");
 
-        // ----------------------------------------------------
+
+        // ====================================================
         // CALLBACK URL
-        // ----------------------------------------------------
+        // ====================================================
 
         const host =
             req.headers.host;
 
+
         const protocol =
             req.headers["x-forwarded-proto"] ||
             "https";
+
 
         const callbackUrl =
             protocol +
@@ -249,14 +307,16 @@ export default async function handler(req, res) {
             host +
             "/api/mpesa-callback";
 
-        // ----------------------------------------------------
-        // STK PUSH REQUEST
-        // ----------------------------------------------------
+
+        // ====================================================
+        // SEND STK PUSH TO SAFARICOM
+        // ====================================================
 
         const stkResponse =
             await fetch(
                 "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
                 {
+
                     method: "POST",
 
                     headers: {
@@ -313,8 +373,10 @@ export default async function handler(req, res) {
                 }
             );
 
+
         const stkData =
             await stkResponse.json();
+
 
         console.log(
             "================================================"
@@ -333,27 +395,23 @@ export default async function handler(req, res) {
         );
 
         console.log(
-            "Client User ID:",
-            userId
-        );
-
-        console.log(
-            "Property ID:",
-            propertyId
-        );
-
-        console.log(
             "================================================"
         );
 
-        // ----------------------------------------------------
-        // CHECK STK RESPONSE
-        // ----------------------------------------------------
+
+        // ====================================================
+        // CHECK SAFARICOM RESPONSE
+        // ====================================================
 
         if (
             !stkResponse.ok ||
             stkData.ResponseCode !== "0"
         ) {
+
+            console.error(
+                "STK PUSH FAILED:",
+                stkData
+            );
 
             return res.status(400).json({
 
@@ -369,51 +427,106 @@ export default async function handler(req, res) {
                     stkData
             });
         }
-// ====================================================
-// SAVE PAYMENT RECORD
-// ====================================================
 
-await db
-    .collection("propertyPayments")
-    .add({
 
-        userId:
-            userId,
+        // ====================================================
+        // GET CHECKOUT REQUEST ID
+        // ====================================================
 
-        propertyId:
-            propertyId,
+        const checkoutRequestId =
+            stkData.CheckoutRequestID;
 
-        amount:
-            paymentAmount,
 
-        paymentCurrency:
-            "KES",
+        const merchantRequestId =
+            stkData.MerchantRequestID;
 
-        status:
-            "PENDING",
 
-        phone:
-            phoneNumber,
+        // ====================================================
+        // SAVE PAYMENT RECORD
+        // ====================================================
+        //
+        // This record connects:
+        //
+        // CLIENT
+        //    ↓
+        // userId
+        //    ↓
+        // PROPERTY
+        //    ↓
+        // propertyId
+        //    ↓
+        // M-PESA
+        //    ↓
+        // checkoutRequestId
+        //
+        // The callback uses this record to grant
+        // 7-day access after successful payment.
+        //
+        // ====================================================
 
-        checkoutRequestId:
-            stkData.CheckoutRequestID,
+        await db
+            .collection("propertyPayments")
+            .add({
 
-        merchantRequestId:
-            stkData.MerchantRequestID,
+                userId:
+                    userId,
 
-        createdAt:
-            firebase.firestore
-                .FieldValue
-                .serverTimestamp(),
+                propertyId:
+                    propertyId,
 
-        updatedAt:
-            firebase.firestore
-                .FieldValue
-                .serverTimestamp()
-    });
-        // ----------------------------------------------------
-        // RETURN SUCCESS
-        // ----------------------------------------------------
+                amount:
+                    paymentAmount,
+
+                paymentCurrency:
+                    "KES",
+
+                status:
+                    "PENDING",
+
+                phone:
+                    phoneNumber,
+
+                checkoutRequestId:
+                    checkoutRequestId,
+
+                merchantRequestId:
+                    merchantRequestId,
+
+                createdAt:
+                    admin.firestore
+                        .FieldValue
+                        .serverTimestamp(),
+
+                updatedAt:
+                    admin.firestore
+                        .FieldValue
+                        .serverTimestamp()
+            });
+
+
+        console.log(
+            "✅ PAYMENT RECORD CREATED"
+        );
+
+        console.log(
+            "User:",
+            userId
+        );
+
+        console.log(
+            "Property:",
+            propertyId
+        );
+
+        console.log(
+            "Checkout:",
+            checkoutRequestId
+        );
+
+
+        // ====================================================
+        // RETURN SUCCESS TO WEBSITE
+        // ====================================================
 
         return res.status(200).json({
 
@@ -423,10 +536,10 @@ await db
                 "M-Pesa payment request sent successfully.",
 
             checkoutRequestId:
-                stkData.CheckoutRequestID,
+                checkoutRequestId,
 
             merchantRequestId:
-                stkData.MerchantRequestID,
+                merchantRequestId,
 
             customerMessage:
                 stkData.CustomerMessage ||
@@ -435,14 +548,12 @@ await db
             propertyId:
                 propertyId,
 
-            userId:
-                userId,
-
             amount:
                 paymentAmount
         });
 
     }
+
 
     catch (error) {
 
@@ -450,6 +561,7 @@ await db
             "❌ VIODA STK PUSH ERROR:",
             error
         );
+
 
         return res.status(500).json({
 
@@ -462,4 +574,4 @@ await db
                 error.message
         });
     }
-}
+};
