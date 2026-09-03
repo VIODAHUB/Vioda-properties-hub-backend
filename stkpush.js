@@ -369,7 +369,48 @@ export default async function handler(req, res) {
                     stkData
             });
         }
+// ====================================================
+// SAVE PAYMENT RECORD
+// ====================================================
 
+await db
+    .collection("propertyPayments")
+    .add({
+
+        userId:
+            userId,
+
+        propertyId:
+            propertyId,
+
+        amount:
+            paymentAmount,
+
+        paymentCurrency:
+            "KES",
+
+        status:
+            "PENDING",
+
+        phone:
+            phoneNumber,
+
+        checkoutRequestId:
+            stkData.CheckoutRequestID,
+
+        merchantRequestId:
+            stkData.MerchantRequestID,
+
+        createdAt:
+            firebase.firestore
+                .FieldValue
+                .serverTimestamp(),
+
+        updatedAt:
+            firebase.firestore
+                .FieldValue
+                .serverTimestamp()
+    });
         // ----------------------------------------------------
         // RETURN SUCCESS
         // ----------------------------------------------------
